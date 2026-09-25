@@ -141,7 +141,7 @@ private fun ActiveCard(a: ActiveSection) {
             }
             if (a.lengthIsEstimate && !a.manual) {
                 Text(
-                    "Дължината на отсечката е приблизителна",
+                    "Координатите на камерите са приблизителни – показанията са ориентировъчни",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

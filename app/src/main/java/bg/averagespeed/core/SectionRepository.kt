@@ -21,10 +21,18 @@ class SectionRepository(private val context: Context) {
 
     private fun hiddenIds(): Set<String> = prefs.getStringSet("hidden", emptySet()) ?: emptySet()
 
-    /** Всички активни отсечки: потребителските + нескритите вградени. */
+    /** Всички активни отсечки: потребителските + нескритите вградени, с променените ограничения. */
     fun all(): List<Section> {
         val hidden = hiddenIds()
-        return user() + builtIn().filterNot { it.id in hidden }
+        return (user() + builtIn().filterNot { it.id in hidden }).map { s ->
+            val limit = prefs.getInt(LIMIT_PREFIX + s.id, 0)
+            if (limit > 0) s.copy(limitKmh = limit) else s
+        }
+    }
+
+    /** Променя ограничението на скоростта за отсечка (напр. ако се различава от стандартното). */
+    fun setLimit(section: Section, limitKmh: Int) {
+        prefs.edit().putInt(LIMIT_PREFIX + section.id, limitKmh).apply()
     }
 
     fun hiddenCount(): Int = hiddenIds().size
@@ -54,4 +62,8 @@ class SectionRepository(private val context: Context) {
     }
 
     fun exportAll(): String = SectionJson.toJson(all())
+
+    private companion object {
+        const val LIMIT_PREFIX = "limit_"
+    }
 }

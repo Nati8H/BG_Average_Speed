@@ -45,6 +45,7 @@ fun SectionsScreen(sections: List<Section>) {
     var showAdd by remember { mutableStateOf(false) }
     var showImport by remember { mutableStateOf(false) }
     var toDelete by remember { mutableStateOf<Section?>(null) }
+    var toEditLimit by remember { mutableStateOf<Section?>(null) }
     val repo = TrackingHub.repository()
 
     LazyColumn(
@@ -53,9 +54,10 @@ fun SectionsScreen(sections: List<Section>) {
     ) {
         item {
             Text(
-                "Вградените отсечки са с ПРИБЛИЗИТЕЛНИ координати. За точно засичане ги запишете сами " +
-                    "(„Запиши нова отсечка“ в екрана Скорост), добавете по координати или импортирайте JSON. " +
-                    "Официален списък: bgtoll.bg → Въпроси и отговори.",
+                "Списъкът е по bgtoll.bg (сертифицирани отсечки) и дължините са официални, но координатите " +
+                    "на камерите са ПРИБЛИЗИТЕЛНИ, а ограниченията са стандартните за типа път – проверете ги. " +
+                    "За точно засичане запишете отсечката сами („Запиши нова отсечка“ в екрана Скорост), " +
+                    "добавете по координати или импортирайте JSON.",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -75,7 +77,7 @@ fun SectionsScreen(sections: List<Section>) {
                 }
             }
         }
-        items(sections, key = { it.id }) { s -> SectionItem(s, onDelete = { toDelete = s }) }
+        items(sections, key = { it.id }) { s -> SectionItem(s, onEditLimit = { toEditLimit = s }, onDelete = { toDelete = s }) }
     }
 
     toDelete?.let { s ->
@@ -93,16 +95,26 @@ fun SectionsScreen(sections: List<Section>) {
             dismissButton = { TextButton(onClick = { toDelete = null }) { Text("Назад") } },
         )
     }
+    toEditLimit?.let { s ->
+        LimitDialog(s, onDismiss = { toEditLimit = null }, onSave = { limit ->
+            repo.setLimit(s, limit)
+            TrackingHub.reloadSections()
+            toEditLimit = null
+        })
+    }
     if (showAdd) AddSectionDialog(onDismiss = { showAdd = false })
     if (showImport) ImportDialog(onDismiss = { showImport = false })
 }
 
 @Composable
-private fun SectionItem(s: Section, onDelete: () -> Unit) {
+private fun SectionItem(s: Section, onEditLimit: () -> Unit, onDelete: () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("${s.fromName} ↔ ${s.toName}", style = MaterialTheme.typography.titleSmall)
+                Text(
+                    "${s.fromName} ${if (s.bidirectional) "↔" else "→"} ${s.toName}",
+                    style = MaterialTheme.typography.titleSmall,
+                )
                 Text(s.road, style = MaterialTheme.typography.bodySmall)
                 val length = s.lengthM?.let { formatKm(it) }
                     ?: ("~" + formatKm(Geo.distanceM(s.startLat, s.startLon, s.endLat, s.endLon)))
@@ -120,9 +132,33 @@ private fun SectionItem(s: Section, onDelete: () -> Unit) {
                     )
                 }
             }
-            TextButton(onClick = onDelete) { Text(if (s.userDefined) "Изтрий" else "Скрий") }
+            Column(horizontalAlignment = Alignment.End) {
+                TextButton(onClick = onEditLimit) { Text("Ограничение") }
+                TextButton(onClick = onDelete) { Text(if (s.userDefined) "Изтрий" else "Скрий") }
+            }
         }
     }
+}
+
+@Composable
+private fun LimitDialog(s: Section, onDismiss: () -> Unit, onSave: (Int) -> Unit) {
+    var limit by remember { mutableStateOf(s.limitKmh.toString()) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Ограничение за ${s.fromName} – ${s.toName}") },
+        text = {
+            OutlinedTextField(
+                limit, { limit = it.filter(Char::isDigit).take(3) },
+                label = { Text("км/ч") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { limit.toIntOrNull()?.takeIf { it in 10..200 }?.let(onSave) }) { Text("Запази") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Назад") } },
+    )
 }
 
 private fun parseLatLon(text: String): Pair<Double, Double>? {

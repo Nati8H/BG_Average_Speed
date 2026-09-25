@@ -1,21 +1,805 @@
 {
-  "_note": "Координатите са ПРИБЛИЗИТЕЛНИ (оценени по имената на участъците). Проверете ги и ги коригирайте в приложението или ги запишете с бутона 'Запиши отсечка'. Официален списък: bgtoll.bg -> Въпроси и отговори.",
-  "sections": [
-    { "id": "a1-vakarel-ihtiman", "road": "АМ Тракия (А1)", "from": "Вакарел", "to": "Ихтиман",
-      "start": [42.5745, 23.6930], "end": [42.4400, 23.8350], "limit": 140, "lengthKm": 19.0, "approximate": true },
-    { "id": "a1-shtarkovo-tsalapitsa", "road": "АМ Тракия (А1)", "from": "Щърково", "to": "Цалапица",
-      "start": [42.1850, 24.4200], "end": [42.1870, 24.5700], "limit": 140, "lengthKm": null, "approximate": true },
-    { "id": "a1-tsalapitsa-radinovo", "road": "АМ Тракия (А1)", "from": "Цалапица", "to": "Радиново",
-      "start": [42.1870, 24.5700], "end": [42.1880, 24.6300], "limit": 140, "lengthKm": null, "approximate": true },
-    { "id": "a1-radinovo-tsaratsovo", "road": "АМ Тракия (А1)", "from": "Радиново", "to": "Царацово",
-      "start": [42.1880, 24.6300], "end": [42.1900, 24.6800], "limit": 140, "lengthKm": null, "approximate": true },
-    { "id": "a1-tsaratsovo-trilistnik", "road": "АМ Тракия (А1)", "from": "Царацово", "to": "Трилистник",
-      "start": [42.1900, 24.6800], "end": [42.1850, 24.8900], "limit": 140, "lengthKm": null, "approximate": true },
-    { "id": "a1-trilistnik-opalchenets", "road": "АМ Тракия (А1)", "from": "Трилистник", "to": "Опълченец",
-      "start": [42.1850, 24.8900], "end": [42.1950, 25.2000], "limit": 140, "lengthKm": null, "approximate": true },
-    { "id": "a2-belokopitovo-kaspichan", "road": "АМ Хемус (А2)", "from": "Белокопитово", "to": "Каспичан",
-      "start": [43.3000, 26.9000], "end": [43.3000, 27.1400], "limit": 140, "lengthKm": null, "approximate": true },
-    { "id": "a2-devnya-ignatievo", "road": "АМ Хемус (А2)", "from": "Девня", "to": "Игнатиево",
-      "start": [43.2400, 27.5700], "end": [43.2400, 27.7500], "limit": 140, "lengthKm": null, "approximate": true }
-  ]
+ "_note": "Списък по bgtoll.bg (Въпроси и отговори → Сертифицирани отсечки за средна скорост). Километрите и дължините са официални. Координатите са ПРИБЛИЗИТЕЛНИ (по населените места), ограниченията са стандартните за типа път – проверете ги.",
+ "sections": [
+  {
+   "id": "bgtoll-01",
+   "road": "АМ „Тракия“",
+   "from": "Крушовица",
+   "to": "Вакарел",
+   "fromKm": 19.46,
+   "toKm": 24.288,
+   "start": [
+    42.5615,
+    23.6376
+   ],
+   "end": [
+    42.5594,
+    23.7098
+   ],
+   "limit": 140,
+   "lengthKm": 4.828,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-02",
+   "road": "АМ „Тракия“",
+   "from": "Вакарел",
+   "to": "Ихтиман",
+   "fromKm": 24.288,
+   "toKm": 43.448,
+   "start": [
+    42.5594,
+    23.7098
+   ],
+   "end": [
+    42.4382,
+    23.8162
+   ],
+   "limit": 140,
+   "lengthKm": 19.16,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-03",
+   "road": "АМ „Тракия“",
+   "from": "Щърково",
+   "to": "Цалапица",
+   "fromKm": 82.263,
+   "toKm": 107.663,
+   "start": [
+    42.3003,
+    24.2353
+   ],
+   "end": [
+    42.1801,
+    24.5683
+   ],
+   "limit": 140,
+   "lengthKm": 25.4,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-04",
+   "road": "АМ „Тракия“",
+   "from": "Цалапица",
+   "to": "Радиново",
+   "fromKm": 107.663,
+   "toKm": 118.599,
+   "start": [
+    42.1801,
+    24.5683
+   ],
+   "end": [
+    42.192,
+    24.6374
+   ],
+   "limit": 140,
+   "lengthKm": 10.936,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-05",
+   "road": "АМ „Тракия“",
+   "from": "Радиново",
+   "to": "Царацово",
+   "fromKm": 118.599,
+   "toKm": 122.673,
+   "start": [
+    42.192,
+    24.6374
+   ],
+   "end": [
+    42.2027,
+    24.6875
+   ],
+   "limit": 140,
+   "lengthKm": 4.074,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-06",
+   "road": "АМ „Тракия“",
+   "from": "Царацово",
+   "to": "Трилистник",
+   "fromKm": 122.673,
+   "toKm": 137.007,
+   "start": [
+    42.2027,
+    24.6875
+   ],
+   "end": [
+    42.2037,
+    24.8732
+   ],
+   "limit": 140,
+   "lengthKm": 14.334,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-07",
+   "road": "АМ „Тракия“",
+   "from": "Трилистник",
+   "to": "Опълченец",
+   "fromKm": 137.007,
+   "toKm": 159.028,
+   "start": [
+    42.2037,
+    24.8732
+   ],
+   "end": [
+    42.2064,
+    25.1232
+   ],
+   "limit": 140,
+   "lengthKm": 22.021,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-08",
+   "road": "АМ „Тракия“",
+   "from": "Опълченец",
+   "to": "Чирпан",
+   "fromKm": 159.028,
+   "toKm": 172.447,
+   "start": [
+    42.2064,
+    25.1232
+   ],
+   "end": [
+    42.2021,
+    25.3249
+   ],
+   "limit": 140,
+   "lengthKm": 13.419,
+   "bidirectional": false,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-09",
+   "road": "АМ „Тракия“",
+   "from": "Кръстина",
+   "to": "Ветрен (Бургас)",
+   "fromKm": 344.388,
+   "toKm": 357.949,
+   "start": [
+    42.5845,
+    27.2383
+   ],
+   "end": [
+    42.557,
+    27.376
+   ],
+   "limit": 140,
+   "lengthKm": 13.561,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-10",
+   "road": "АМ „Хемус“",
+   "from": "Горни Богров",
+   "to": "Чурек",
+   "fromKm": 6.804,
+   "toKm": 27.024,
+   "start": [
+    42.7167,
+    23.5333
+   ],
+   "end": [
+    42.7751,
+    23.7186
+   ],
+   "limit": 140,
+   "lengthKm": 20.22,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-11",
+   "road": "АМ „Хемус“",
+   "from": "Белокопитово",
+   "to": "Каспичан",
+   "fromKm": 340.293,
+   "toKm": 361.581,
+   "start": [
+    43.3337,
+    26.8996
+   ],
+   "end": [
+    43.3178,
+    27.1541
+   ],
+   "limit": 140,
+   "lengthKm": 21.288,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-12",
+   "road": "АМ „Хемус“",
+   "from": "Девня",
+   "to": "Игнатиево",
+   "fromKm": 399.703,
+   "toKm": 418.126,
+   "start": [
+    43.2222,
+    27.5694
+   ],
+   "end": [
+    43.2481,
+    27.779
+   ],
+   "limit": 140,
+   "lengthKm": 18.423,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-13",
+   "road": "АМ „Струма“",
+   "from": "София (Люлин)",
+   "to": "Тунел \"Мало Бучино\"",
+   "fromKm": 0.672,
+   "toKm": 8.226,
+   "start": [
+    42.678,
+    23.238
+   ],
+   "end": [
+    42.673,
+    23.17
+   ],
+   "limit": 140,
+   "lengthKm": 7.554,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-14",
+   "road": "АМ „Струма“",
+   "from": "яз. Дяково",
+   "to": "Дяково",
+   "fromKm": 49.474,
+   "toKm": 52.049,
+   "start": [
+    42.355,
+    23.075
+   ],
+   "end": [
+    42.336,
+    23.09
+   ],
+   "limit": 140,
+   "lengthKm": 2.575,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-15",
+   "road": "АМ „Струма“",
+   "from": "Българчево",
+   "to": "Покровник",
+   "fromKm": 90.219,
+   "toKm": 92.548,
+   "start": [
+    42.01,
+    23.065
+   ],
+   "end": [
+    41.991,
+    23.07
+   ],
+   "limit": 140,
+   "lengthKm": 2.329,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-16",
+   "road": "АМ „Струма“",
+   "from": "Долна Градешница",
+   "to": "Сандански",
+   "fromKm": 129.714,
+   "toKm": 143.945,
+   "start": [
+    41.683,
+    23.183
+   ],
+   "end": [
+    41.575,
+    23.255
+   ],
+   "limit": 140,
+   "lengthKm": 14.231,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-17",
+   "road": "АМ „Струма“",
+   "from": "Сандански",
+   "to": "Дамяница",
+   "fromKm": 143.945,
+   "toKm": 151.251,
+   "start": [
+    41.575,
+    23.255
+   ],
+   "end": [
+    41.517,
+    23.26
+   ],
+   "limit": 140,
+   "lengthKm": 7.306,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-18",
+   "road": "АМ „Струма“",
+   "from": "Дамяница",
+   "to": "Марикостиново",
+   "fromKm": 151.251,
+   "toKm": 163.488,
+   "start": [
+    41.517,
+    23.26
+   ],
+   "end": [
+    41.4314,
+    23.3335
+   ],
+   "limit": 140,
+   "lengthKm": 12.237,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-19",
+   "road": "АМ „Марица“",
+   "from": "Харманли",
+   "to": "Любимец",
+   "fromKm": 62.476,
+   "toKm": 83.554,
+   "start": [
+    41.9304,
+    25.9026
+   ],
+   "end": [
+    41.8474,
+    26.0855
+   ],
+   "limit": 140,
+   "lengthKm": 21.078,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-20",
+   "road": "АМ „Марица“",
+   "from": "Любимец",
+   "to": "Момково",
+   "fromKm": 83.554,
+   "toKm": 89.476,
+   "start": [
+    41.8474,
+    26.0855
+   ],
+   "end": [
+    41.8461,
+    26.149
+   ],
+   "limit": 140,
+   "lengthKm": 5.922,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-21",
+   "road": "АМ „Марица“",
+   "from": "Момково",
+   "to": "Свиленград",
+   "fromKm": 89.476,
+   "toKm": 98.481,
+   "start": [
+    41.8461,
+    26.149
+   ],
+   "end": [
+    41.7655,
+    26.2019
+   ],
+   "limit": 140,
+   "lengthKm": 9.005,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-22",
+   "road": "АМ „Европа“ (Северна скоростна тангента)",
+   "from": "Илиянци",
+   "to": "Чепинци",
+   "fromKm": 50.427,
+   "toKm": 60.705,
+   "start": [
+    42.736,
+    23.302
+   ],
+   "end": [
+    42.758,
+    23.426
+   ],
+   "limit": 140,
+   "lengthKm": 10.278,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-23",
+   "road": "I-1",
+   "from": "Жеглица",
+   "to": "Срацимирово",
+   "fromKm": 23.485,
+   "toKm": 34.751,
+   "start": [
+    43.8798,
+    22.7986
+   ],
+   "end": [
+    43.8292,
+    22.7348
+   ],
+   "limit": 90,
+   "lengthKm": 11.266,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-24",
+   "road": "I-1",
+   "from": "Слатино",
+   "to": "Кочериново",
+   "fromKm": 343.292,
+   "toKm": 353.878,
+   "start": [
+    42.1618,
+    23.0573
+   ],
+   "end": [
+    42.0846,
+    23.0558
+   ],
+   "limit": 90,
+   "lengthKm": 10.586,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-25",
+   "road": "I-2",
+   "from": "Струйно",
+   "to": "Шумен",
+   "fromKm": 104.733,
+   "toKm": 112.381,
+   "start": [
+    43.3674,
+    26.8512
+   ],
+   "end": [
+    43.3,
+    26.915
+   ],
+   "limit": 90,
+   "lengthKm": 7.648,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-26",
+   "road": "I-3",
+   "from": "Долни Дъбник",
+   "to": "Телиш",
+   "fromKm": 100.471,
+   "toKm": 122.349,
+   "start": [
+    43.4088,
+    24.4423
+   ],
+   "end": [
+    43.3266,
+    24.2612
+   ],
+   "limit": 90,
+   "lengthKm": 21.878,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-27",
+   "road": "I-3",
+   "from": "Пейчиново",
+   "to": "Горна Студена",
+   "fromKm": 3.997,
+   "toKm": 25.271,
+   "start": [
+    43.4434,
+    25.6028
+   ],
+   "end": [
+    43.417,
+    25.351
+   ],
+   "limit": 90,
+   "lengthKm": 21.274,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-28",
+   "road": "I-4",
+   "from": "Български извор",
+   "to": "Сопот (Ловеч)",
+   "fromKm": 13.536,
+   "toKm": 22.734,
+   "start": [
+    43.0333,
+    24.2833
+   ],
+   "end": [
+    43.0327,
+    24.4035
+   ],
+   "limit": 90,
+   "lengthKm": 9.198,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-29",
+   "road": "I-4",
+   "from": "Сопот (Ловеч)",
+   "to": "Голец",
+   "fromKm": 22.734,
+   "toKm": 40.67,
+   "start": [
+    43.0327,
+    24.4035
+   ],
+   "end": [
+    43.0453,
+    24.5862
+   ],
+   "limit": 90,
+   "lengthKm": 17.936,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-30",
+   "road": "I-4",
+   "from": "Ряховците",
+   "to": "Богатово",
+   "fromKm": 76.135,
+   "toKm": 93.155,
+   "start": [
+    43.0167,
+    25.0167
+   ],
+   "end": [
+    43.0326,
+    25.1579
+   ],
+   "limit": 90,
+   "lengthKm": 17.02,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-31",
+   "road": "I-4",
+   "from": "Богатово",
+   "to": "Момин сбор",
+   "fromKm": 93.155,
+   "toKm": 116.9,
+   "start": [
+    43.0326,
+    25.1579
+   ],
+   "end": [
+    43.0971,
+    25.4872
+   ],
+   "limit": 90,
+   "lengthKm": 23.745,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-32",
+   "road": "I-4",
+   "from": "Омуртаг",
+   "to": "Пролаз",
+   "fromKm": 204.539,
+   "toKm": 217.988,
+   "start": [
+    43.1083,
+    26.4177
+   ],
+   "end": [
+    43.173,
+    26.5015
+   ],
+   "limit": 90,
+   "lengthKm": 13.449,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-33",
+   "road": "I-5",
+   "from": "Полски Тръмбеш",
+   "to": "Поликраище",
+   "fromKm": 68.946,
+   "toKm": 89.971,
+   "start": [
+    43.371,
+    25.6329
+   ],
+   "end": [
+    43.1833,
+    25.6167
+   ],
+   "limit": 90,
+   "lengthKm": 21.025,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-34",
+   "road": "I-5",
+   "from": "Обретеник",
+   "to": "Тръстеник (Русе)",
+   "fromKm": 34.704,
+   "toKm": 25.914,
+   "start": [
+    43.5833,
+    25.8167
+   ],
+   "end": [
+    43.6634,
+    25.8567
+   ],
+   "limit": 90,
+   "lengthKm": 8.79,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-35",
+   "road": "I-5",
+   "from": "Одяланик",
+   "to": "Тръстеник (Русе)",
+   "fromKm": 11.382,
+   "toKm": 25.914,
+   "start": [
+    43.768,
+    25.92
+   ],
+   "end": [
+    43.6634,
+    25.8567
+   ],
+   "limit": 90,
+   "lengthKm": 14.532,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-36",
+   "road": "I-5",
+   "from": "Поликраище",
+   "to": "Самоводене",
+   "fromKm": 89.971,
+   "toKm": 96.514,
+   "start": [
+    43.1833,
+    25.6167
+   ],
+   "end": [
+    43.1395,
+    25.6102
+   ],
+   "limit": 90,
+   "lengthKm": 6.543,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-37",
+   "road": "I-5",
+   "from": "Казанлък",
+   "to": "Ягода",
+   "fromKm": 199.527,
+   "toKm": 212.716,
+   "start": [
+    42.6194,
+    25.393
+   ],
+   "end": [
+    42.5434,
+    25.567
+   ],
+   "limit": 90,
+   "lengthKm": 13.189,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-38",
+   "road": "I-6",
+   "from": "Беланица",
+   "to": "Радомир",
+   "fromKm": 60.643,
+   "toKm": 69.047,
+   "start": [
+    42.4833,
+    22.938
+   ],
+   "end": [
+    42.5443,
+    22.9616
+   ],
+   "limit": 90,
+   "lengthKm": 8.404,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-39",
+   "road": "I-8",
+   "from": "Ихтиман",
+   "to": "Мирово",
+   "fromKm": 123.404,
+   "toKm": 134.876,
+   "start": [
+    42.4382,
+    23.8162
+   ],
+   "end": [
+    42.3861,
+    23.8737
+   ],
+   "limit": 90,
+   "lengthKm": 11.472,
+   "bidirectional": true,
+   "approximate": true
+  },
+  {
+   "id": "bgtoll-40",
+   "road": "II-55",
+   "from": "Килифарево",
+   "to": "Въглевци",
+   "fromKm": 5.14,
+   "toKm": 18.395,
+   "start": [
+    42.995,
+    25.6216
+   ],
+   "end": [
+    42.908,
+    25.6496
+   ],
+   "limit": 90,
+   "lengthKm": 13.255,
+   "bidirectional": true,
+   "approximate": true
+  }
+ ]
 }

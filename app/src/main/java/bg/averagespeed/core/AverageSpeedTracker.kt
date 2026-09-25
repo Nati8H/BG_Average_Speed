@@ -73,6 +73,10 @@ sealed interface TrackerEvent {
  * преминаване се приема за засичане. При излизане от радиуса се проверява, че
  * колата се приближава към крайната камера (правилна посока).
  * Излизане: аналогично – най-близкото преминаване покрай крайната камера.
+ *
+ * Може да има няколко едновременно засечени отсечки (напр. успоредни пътища с обща
+ * начална точка при приблизителни координати) – грешните отпадат, когато колата се
+ * отдалечи от крайната им точка.
  */
 class AverageSpeedTracker(sections: List<Section> = emptyList()) {
 
@@ -93,14 +97,12 @@ class AverageSpeedTracker(sections: List<Section> = emptyList()) {
         var entryTimeMs: Long?,
         var travelledM: Double,
         var exitMin: ExitMin? = null,
+        var minDistToExit: Double = Double.MAX_VALUE,
     )
 
     private var directed: List<DirectedSection> = emptyList()
     private val candidates = HashMap<String, Candidate>()
-    private var active: Active? = null
-
-    /** Засечено начало на следваща отсечка, докато предишната още не е приключила. */
-    private var pendingEntry: Pair<DirectedSection, Candidate>? = null
+    private val actives = mutableListOf<Active>()
 
     var lastFix: Fix? = null
         private set
@@ -114,19 +116,17 @@ class AverageSpeedTracker(sections: List<Section> = emptyList()) {
     fun setSections(sections: List<Section>) {
         directed = sections.flatMap { it.directions() }
         candidates.clear()
-        pendingEntry = null
+        actives.removeAll { it.directed != null }
     }
 
-    /** Нулира текущото измерване и последната точка (при спиране на следенето). */
+    /** Нулира текущите измервания и последната точка (при спиране на следенето). */
     fun reset() {
-        active = null
-        pendingEntry = null
+        actives.clear()
         candidates.clear()
         lastFix = null
     }
 
-    val isActive: Boolean get() = active != null
-    val isManual: Boolean get() = active?.let { it.directed == null } ?: false
+    val isActive: Boolean get() = actives.isNotEmpty()
 
     fun onFix(fix: Fix): List<TrackerEvent> {
         val events = mutableListOf<TrackerEvent>()
@@ -137,7 +137,7 @@ class AverageSpeedTracker(sections: List<Section> = emptyList()) {
         val step = if (prev == null || stationary) 0.0 else Geo.distanceM(prev, fix)
         lastFix = fix
 
-        active?.let { a -> updateActive(a, fix, step, events) }
+        for (a in actives.toList()) updateActive(a, fix, step, events)
         updateCandidates(fix, step, events)
         return events
     }
@@ -152,36 +152,33 @@ class AverageSpeedTracker(sections: List<Section> = emptyList()) {
         val d = a.directed ?: return
 
         val dExit = Geo.distanceM(fix.lat, fix.lon, d.exitLat, d.exitLon)
+        a.minDistToExit = minOf(a.minDistToExit, dExit)
         val exitMin = a.exitMin
         if (dExit <= d.radiusM) {
             if (exitMin == null || dExit < exitMin.minDist) {
                 a.exitMin = ExitMin(dExit, fix.timeMs, a.travelledM)
             }
         } else if (exitMin != null) {
-            val lengthM = if (d.lengthIsEstimate) exitMin.travelledAtMin else d.lengthM
+            // При приблизителни координати засеченият участък не съвпада точно с отсечката,
+            // затова средната се смята по реално изминатото разстояние.
+            val lengthM = if (d.lengthIsEstimate || d.section.approximate) exitMin.travelledAtMin else d.lengthM
             val result = SectionResult(a.title, a.road, a.limitKmh, lengthM, exitMin.timeMs - entry, manual = false)
             lastResult = result
-            active = null
+            actives.remove(a)
             events += TrackerEvent.Finished(result)
-            pendingEntry?.let { (pd, pc) ->
-                pendingEntry = null
-                pc.travelledSinceMin += step
-                if (fix.timeMs - pc.minFix.timeMs < PENDING_MAX_AGE_MS) enter(pd, pc, fix, events)
-            }
         } else {
             val elapsedMs = fix.timeMs - entry
             val expectedMs = d.lengthM / (d.section.limitKmh / 3.6) * 1000
             val timeout = max(expectedMs * 4, 30 * 60_000.0)
-            if (dExit > d.straightM + CANCEL_MARGIN_M || elapsedMs > timeout) {
-                active = null
-                pendingEntry = null
+            val movingAway = dExit > a.minDistToExit + MOVING_AWAY_M
+            if (movingAway || dExit > d.straightM + CANCEL_MARGIN_M || elapsedMs > timeout) {
+                actives.remove(a)
                 events += TrackerEvent.Cancelled(a.title)
             }
         }
     }
 
     private fun updateCandidates(fix: Fix, step: Double, events: MutableList<TrackerEvent>) {
-        pendingEntry?.second?.let { it.travelledSinceMin += step }
         for (d in directed) {
             val dEntry = Geo.distanceM(fix.lat, fix.lon, d.entryLat, d.entryLon)
             val c = candidates[d.key]
@@ -201,36 +198,28 @@ class AverageSpeedTracker(sections: List<Section> = emptyList()) {
                 candidates.remove(d.key)
                 c.travelledSinceMin += step
                 val movingTowardsExit = distToExit(fix, d) < c.distToExitAtMin - DIRECTION_THRESHOLD_M
-                if (movingTowardsExit) {
-                    val current = active
-                    if (current == null) {
-                        enter(d, c, fix, events)
-                    } else if (current.directed != null && current.directed.key != d.key) {
-                        pendingEntry = d to c
-                    }
+                if (movingTowardsExit && actives.none { it.directed?.key == d.key }) {
+                    val a = Active(
+                        directed = d,
+                        title = d.title,
+                        road = d.section.road,
+                        limitKmh = d.section.limitKmh,
+                        entryTimeMs = c.minFix.timeMs,
+                        travelledM = c.travelledSinceMin,
+                    )
+                    actives += a
+                    events += TrackerEvent.Entered(snapshotOf(a, fix.timeMs))
                 }
             }
         }
-    }
-
-    private fun enter(d: DirectedSection, c: Candidate, fix: Fix, events: MutableList<TrackerEvent>) {
-        val a = Active(
-            directed = d,
-            title = d.title,
-            road = d.section.road,
-            limitKmh = d.section.limitKmh,
-            entryTimeMs = c.minFix.timeMs,
-            travelledM = c.travelledSinceMin,
-        )
-        active = a
-        events += TrackerEvent.Entered(snapshotOf(a, fix.timeMs))
     }
 
     private fun distToExit(fix: Fix, d: DirectedSection) = Geo.distanceM(fix.lat, fix.lon, d.exitLat, d.exitLon)
 
     /** Ръчно стартиране (напр. за отсечка, която я няма в списъка). */
     fun startManual(limitKmh: Int?) {
-        active = Active(
+        actives.removeAll { it.directed == null }
+        actives += Active(
             directed = null,
             title = "Ръчно измерване",
             road = "",
@@ -240,35 +229,39 @@ class AverageSpeedTracker(sections: List<Section> = emptyList()) {
         )
     }
 
-    /** Спира текущото измерване (ръчно или автоматично). */
+    /**
+     * Спира текущите измервания. Връща резултат само за ръчно измерване;
+     * прекъснатите автоматични измервания нямат резултат.
+     */
     fun stop(): SectionResult? {
-        val a = active ?: return null
-        active = null
-        pendingEntry = null
+        val manual = actives.firstOrNull { it.directed == null }
+        actives.clear()
+        val a = manual ?: return null
         val entry = a.entryTimeMs ?: return null
         val now = lastFix?.timeMs ?: return null
-        if (a.directed != null) return null // прекъснато автоматично измерване – без резултат
         val result = SectionResult(a.title, a.road, a.limitKmh, a.travelledM, now - entry, manual = true)
         lastResult = result
         return result
     }
 
+    /** Основното текущо измерване: ръчното, ако има, иначе последно засеченото. */
     fun snapshot(): ActiveSection? {
-        val a = active ?: return null
+        val a = actives.firstOrNull { it.directed == null } ?: actives.lastOrNull() ?: return null
         return snapshotOf(a, lastFix?.timeMs ?: a.entryTimeMs ?: 0L)
     }
 
     private fun snapshotOf(a: Active, nowMs: Long): ActiveSection {
         val entry = a.entryTimeMs ?: nowMs
+        val d = a.directed
         return ActiveSection(
             title = a.title,
             road = a.road,
             limitKmh = a.limitKmh,
-            manual = a.directed == null,
+            manual = d == null,
             elapsedMs = max(0L, nowMs - entry),
             travelledM = a.travelledM,
-            sectionLengthM = a.directed?.lengthM,
-            lengthIsEstimate = a.directed?.lengthIsEstimate ?: false,
+            sectionLengthM = d?.lengthM,
+            lengthIsEstimate = d != null && (d.lengthIsEstimate || d.section.approximate),
         )
     }
 
@@ -281,6 +274,6 @@ class AverageSpeedTracker(sections: List<Section> = emptyList()) {
         const val STATIONARY_MPS = 0.8
         const val DIRECTION_THRESHOLD_M = 30.0
         const val CANCEL_MARGIN_M = 3_000.0
-        const val PENDING_MAX_AGE_MS = 5 * 60_000L
+        const val MOVING_AWAY_M = 2_000.0
     }
 }

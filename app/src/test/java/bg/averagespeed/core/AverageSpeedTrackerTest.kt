@@ -91,6 +91,48 @@ class AverageSpeedTrackerTest {
     }
 
     @Test
+    fun falseParallelSectionIsDroppedAndRealOneFinishes() {
+        // Отсечка със същото начало, но крайна точка на ~8 км на североизток – колата кара на изток.
+        val metersPerDegLat = Geo.distanceM(0.0, 0.0, 1.0, 0.0)
+        val other = section.copy(
+            id = "other", fromName = "А", toName = "Х",
+            endLat = lat + 6_000 / metersPerDegLat, endLon = lonA + lonOffset(5_000.0), lengthM = 8_000.0,
+        )
+        val tracker = AverageSpeedTracker(listOf(section, other))
+        val events = drive(tracker, lonA - lonOffset(1000.0), lonB + lonOffset(1000.0), 100.0)
+        assertEquals(2, events.filterIsInstance<TrackerEvent.Entered>().size)
+        assertEquals(listOf("А → Х"), events.filterIsInstance<TrackerEvent.Cancelled>().map { it.title })
+        val finished = events.filterIsInstance<TrackerEvent.Finished>().single().result
+        assertEquals("А → Б", finished.title)
+        assertEquals(100.0, finished.avgKmh, 1.5)
+    }
+
+    @Test
+    fun approximateSectionUsesTravelledDistance() {
+        val approx = section.copy(approximate = true, lengthM = 12_000.0)
+        val tracker = AverageSpeedTracker(listOf(approx))
+        val events = drive(tracker, lonA - lonOffset(2000.0), lonB + lonOffset(2000.0), 100.0)
+        val result = events.filterIsInstance<TrackerEvent.Finished>().single().result
+        // Официалната дължина (12 км) не се ползва – средната е реалната скорост.
+        assertEquals(100.0, result.avgKmh, 1.5)
+    }
+
+    @Test
+    fun bundledSectionsMatchOfficialList() {
+        val json = java.io.File("src/main/assets/sections.json").takeIf { it.exists() }
+            ?: java.io.File("app/src/main/assets/sections.json")
+        val sections = SectionJson.parse(json.readText(), userDefined = false)
+        assertEquals(40, sections.size)
+        assertEquals(79, sections.sumOf { it.directions().size })
+        assertEquals(sections.size, sections.map { it.id }.toSet().size)
+        for (s in sections) {
+            val straight = Geo.distanceM(s.startLat, s.startLon, s.endLat, s.endLon)
+            // Приблизителните точки трябва да са съобразени с официалната дължина.
+            assertTrue("${s.fromName}-${s.toName}: $straight vs ${s.lengthM}", straight < s.lengthM!! * 1.5 + 2_000)
+        }
+    }
+
+    @Test
     fun manualMeasurement() {
         val tracker = AverageSpeedTracker(emptyList())
         tracker.onFix(Fix(lat, lonA, 0L, 25.0, 5.0))

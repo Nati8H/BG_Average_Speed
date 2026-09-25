@@ -27,6 +27,7 @@ object SectionJson {
                 bidirectional = o.optBoolean("bidirectional", true),
                 approximate = o.optBoolean("approximate", false),
                 userDefined = userDefined,
+                radiusM = if (o.has("radiusM") && !o.isNull("radiusM")) o.getDouble("radiusM") else null,
             )
         }
     }
@@ -46,6 +47,7 @@ object SectionJson {
                     .put("lengthKm", s.lengthM?.let { it / 1000.0 } ?: JSONObject.NULL)
                     .put("bidirectional", s.bidirectional)
                     .put("approximate", s.approximate)
+                    .put("radiusM", s.radiusM ?: JSONObject.NULL)
             )
         }
         return JSONObject().put("sections", array).toString(2)

@@ -19,8 +19,10 @@ data class Section(
     val bidirectional: Boolean = true,
     val approximate: Boolean = false,
     val userDefined: Boolean = false,
+    /** Радиус на засичане около камерите; по подразбиране според точността на координатите. */
+    val radiusM: Double? = null,
 ) {
-    val triggerRadiusM: Double get() = if (approximate) 700.0 else 200.0
+    val triggerRadiusM: Double get() = radiusM ?: if (approximate) 1200.0 else 200.0
 
     fun directions(): List<DirectedSection> =
         if (bidirectional) listOf(DirectedSection(this, false), DirectedSection(this, true))
