@@ -113,7 +113,7 @@ class TrackingService : Service(), LocationListener {
         }
         if (text != lastNotificationText) {
             lastNotificationText = text
-            getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(text))
+            getSystemService(NotificationManager::class.java)?.notify(NOTIFICATION_ID, buildNotification(text))
         }
     }
 
@@ -144,7 +144,7 @@ class TrackingService : Service(), LocationListener {
 
     private fun createChannel() {
         val channel = NotificationChannel(CHANNEL_ID, "Средна скорост", NotificationManager.IMPORTANCE_LOW)
-        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
     }
 
     private fun buildNotification(text: String): Notification {

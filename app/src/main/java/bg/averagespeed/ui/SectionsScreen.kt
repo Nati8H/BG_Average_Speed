@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -147,26 +148,18 @@ private fun AddSectionDialog(onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text("Нова отсечка") },
         text = {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                item { OutlinedTextField(road, { road = it }, label = { Text("Път") }, singleLine = true) }
-                item { OutlinedTextField(from, { from = it }, label = { Text("От (име)") }, singleLine = true) }
-                item { OutlinedTextField(to, { to = it }, label = { Text("До (име)") }, singleLine = true) }
-                item {
-                    OutlinedTextField(start, { start = it }, label = { Text("Начална камера: шир., дълж.") },
-                        placeholder = { Text("42.5745, 23.6930") }, singleLine = true)
-                }
-                item {
-                    OutlinedTextField(end, { end = it }, label = { Text("Крайна камера: шир., дълж.") },
-                        placeholder = { Text("42.4400, 23.8350") }, singleLine = true)
-                }
-                item {
-                    OutlinedTextField(limit, { limit = it.filter(Char::isDigit) }, label = { Text("Ограничение, км/ч") },
-                        singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                }
-                item {
-                    OutlinedTextField(lengthKm, { lengthKm = it }, label = { Text("Дължина, км (по желание)") },
-                        singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-                }
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(road, { road = it }, label = { Text("Път") }, singleLine = true)
+                OutlinedTextField(from, { from = it }, label = { Text("От (име)") }, singleLine = true)
+                OutlinedTextField(to, { to = it }, label = { Text("До (име)") }, singleLine = true)
+                OutlinedTextField(start, { start = it }, label = { Text("Начална камера: шир., дълж.") },
+                    placeholder = { Text("42.5745, 23.6930") }, singleLine = true)
+                OutlinedTextField(end, { end = it }, label = { Text("Крайна камера: шир., дълж.") },
+                    placeholder = { Text("42.4400, 23.8350") }, singleLine = true)
+                OutlinedTextField(limit, { limit = it.filter(Char::isDigit) }, label = { Text("Ограничение, км/ч") },
+                    singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                OutlinedTextField(lengthKm, { lengthKm = it }, label = { Text("Дължина, км (по желание)") },
+                    singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
             }
         },
         confirmButton = {
