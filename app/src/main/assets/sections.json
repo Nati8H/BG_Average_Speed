@@ -1,0 +1,21 @@
+{
+  "_note": "Координатите са ПРИБЛИЗИТЕЛНИ (оценени по имената на участъците). Проверете ги и ги коригирайте в приложението или ги запишете с бутона 'Запиши отсечка'. Официален списък: bgtoll.bg -> Въпроси и отговори.",
+  "sections": [
+    { "id": "a1-vakarel-ihtiman", "road": "АМ Тракия (А1)", "from": "Вакарел", "to": "Ихтиман",
+      "start": [42.5745, 23.6930], "end": [42.4400, 23.8350], "limit": 140, "lengthKm": 19.0, "approximate": true },
+    { "id": "a1-shtarkovo-tsalapitsa", "road": "АМ Тракия (А1)", "from": "Щърково", "to": "Цалапица",
+      "start": [42.1850, 24.4200], "end": [42.1870, 24.5700], "limit": 140, "lengthKm": null, "approximate": true },
+    { "id": "a1-tsalapitsa-radinovo", "road": "АМ Тракия (А1)", "from": "Цалапица", "to": "Радиново",
+      "start": [42.1870, 24.5700], "end": [42.1880, 24.6300], "limit": 140, "lengthKm": null, "approximate": true },
+    { "id": "a1-radinovo-tsaratsovo", "road": "АМ Тракия (А1)", "from": "Радиново", "to": "Царацово",
+      "start": [42.1880, 24.6300], "end": [42.1900, 24.6800], "limit": 140, "lengthKm": null, "approximate": true },
+    { "id": "a1-tsaratsovo-trilistnik", "road": "АМ Тракия (А1)", "from": "Царацово", "to": "Трилистник",
+      "start": [42.1900, 24.6800], "end": [42.1850, 24.8900], "limit": 140, "lengthKm": null, "approximate": true },
+    { "id": "a1-trilistnik-opalchenets", "road": "АМ Тракия (А1)", "from": "Трилистник", "to": "Опълченец",
+      "start": [42.1850, 24.8900], "end": [42.1950, 25.2000], "limit": 140, "lengthKm": null, "approximate": true },
+    { "id": "a2-belokopitovo-kaspichan", "road": "АМ Хемус (А2)", "from": "Белокопитово", "to": "Каспичан",
+      "start": [43.3000, 26.9000], "end": [43.3000, 27.1400], "limit": 140, "lengthKm": null, "approximate": true },
+    { "id": "a2-devnya-ignatievo", "road": "АМ Хемус (А2)", "from": "Девня", "to": "Игнатиево",
+      "start": [43.2400, 27.5700], "end": [43.2400, 27.7500], "limit": 140, "lengthKm": null, "approximate": true }
+  ]
+}
