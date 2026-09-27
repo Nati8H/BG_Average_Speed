@@ -133,6 +133,68 @@ class AverageSpeedTrackerTest {
     }
 
     @Test
+    fun joinsMidwayWhenStartingInsideSection() {
+        val tracker = AverageSpeedTracker(listOf(section))
+        // Старт на 3 км след началната камера, движение към края с 90 км/ч.
+        val events = drive(tracker, lonA + lonOffset(3000.0), lonB + lonOffset(1000.0), 90.0)
+        val entered = events.filterIsInstance<TrackerEvent.Entered>().single().active
+        assertEquals("А → Б", entered.title)
+        assertTrue(entered.joinedMidway)
+        // Измерва се само оставащата част (~7 км).
+        assertEquals(7000.0, entered.sectionLengthM!!, 200.0)
+        val result = events.filterIsInstance<TrackerEvent.Finished>().single().result
+        assertTrue(result.partial)
+        assertEquals(90.0, result.avgKmh, 1.5)
+    }
+
+    @Test
+    fun joinsMidwayOnlyInDirectionOfTravel() {
+        val tracker = AverageSpeedTracker(listOf(section))
+        // Старт по средата, движение обратно към А – трябва да се засече посоката Б → А.
+        val events = drive(tracker, lonA + lonOffset(6000.0), lonA - lonOffset(1000.0), 100.0)
+        val entered = events.filterIsInstance<TrackerEvent.Entered>().single().active
+        assertEquals("Б → А", entered.title)
+    }
+
+    @Test
+    fun noMidwayJoinWhenParkedInsideSection() {
+        val tracker = AverageSpeedTracker(listOf(section))
+        val mid = lonA + lonOffset(5000.0)
+        var events = emptyList<TrackerEvent>()
+        for (i in 0..120) events = events + tracker.onFix(Fix(lat, mid, i * 1000L, 0.0, 5.0))
+        assertTrue(events.isEmpty())
+    }
+
+    @Test
+    fun nearestAheadRespectsDirection() {
+        // Две отсечки: една на изток и една на запад от колата.
+        val west = section.copy(
+            id = "w", fromName = "З1", toName = "З2",
+            startLon = lonA - lonOffset(5000.0), endLon = lonA - lonOffset(15000.0),
+        )
+        val east = section.copy(
+            id = "e", fromName = "И1", toName = "И2", bidirectional = false,
+            startLon = lonA + lonOffset(8000.0), endLon = lonA + lonOffset(18000.0),
+        )
+        val tracker = AverageSpeedTracker(listOf(west, east))
+        // Кара на изток 1 км – западната отсечка е по-близо, но е зад колата.
+        drive(tracker, lonA - lonOffset(1000.0), lonA, 90.0)
+        val (d, _) = tracker.nearestAhead(tracker.lastFix!!)!!
+        assertEquals("И1 → И2", d.title)
+        // Без посока се връща най-близката изобщо.
+        val fresh = AverageSpeedTracker(listOf(west, east))
+        fresh.onFix(Fix(lat, lonA, 0L, 0.0, 5.0))
+        assertEquals("w", fresh.nearestAhead(fresh.lastFix!!)!!.first.section.id)
+    }
+
+    @Test
+    fun bearing() {
+        assertEquals(90.0, Geo.bearingDeg(lat, lonA, lat, lonB), 0.5)
+        assertEquals(0.0, Geo.bearingDeg(42.0, 24.0, 42.1, 24.0), 0.01)
+        assertEquals(20.0, Geo.angleDiff(350.0, 10.0), 1e-9)
+    }
+
+    @Test
     fun manualMeasurement() {
         val tracker = AverageSpeedTracker(emptyList())
         tracker.onFix(Fix(lat, lonA, 0L, 25.0, 5.0))

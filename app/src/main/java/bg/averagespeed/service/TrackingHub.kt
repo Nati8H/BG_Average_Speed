@@ -13,7 +13,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
 
-data class NearestInfo(val title: String, val road: String, val distanceM: Double, val limitKmh: Int)
+/** Най-близката отсечка; [ahead] = избрана по посоката на движение (иначе е най-близката изобщо). */
+data class NearestInfo(val title: String, val road: String, val distanceM: Double, val limitKmh: Int, val ahead: Boolean)
 
 /** Записване на нова отсечка по време на шофиране: от маркер „начало" до маркер „край". */
 data class RecordingInfo(val startLat: Double, val startLon: Double, val lengthM: Double, val startTimeMs: Long)
@@ -137,8 +138,9 @@ object TrackingHub {
     }
 
     private fun publish(fix: Fix?) {
-        val nearest = fix?.let { tracker.nearest(it) }?.let { (d, dist) ->
-            NearestInfo(d.title, d.section.road, dist, d.section.limitKmh)
+        val ahead = tracker.headingDeg != null
+        val nearest = fix?.let { tracker.nearestAhead(it) }?.let { (d, dist) ->
+            NearestInfo(d.title, d.section.road, dist, d.section.limitKmh, ahead)
         }
         _state.value = _state.value.copy(
             hasFix = fix != null,

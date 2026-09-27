@@ -18,13 +18,18 @@ import android.media.ToneGenerator
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.speech.tts.TextToSpeech
+import androidx.car.app.notification.CarAppExtender
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import bg.averagespeed.MainActivity
 import bg.averagespeed.R
+import bg.averagespeed.core.ActiveSection
 import bg.averagespeed.core.Fix
+import bg.averagespeed.core.SectionResult
 import bg.averagespeed.core.TrackerEvent
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -38,6 +43,8 @@ class TrackingService : Service(), LocationListener {
     private var tone: ToneGenerator? = null
     private var wasOverLimit = false
     private var lastNotificationText: String? = null
+    private var sectionNotificationShown = false
+    private var lastSectionNotificationMs = 0L
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -60,12 +67,18 @@ class TrackingService : Service(), LocationListener {
             stopSelf()
             return START_NOT_STICKY
         }
-        ServiceCompat.startForeground(
-            this,
-            NOTIFICATION_ID,
-            buildNotification("Следене на отсечките за средна скорост…"),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0,
-        )
+        try {
+            ServiceCompat.startForeground(
+                this,
+                NOTIFICATION_ID,
+                buildNotification("Следене на отсечките за средна скорост…"),
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0,
+            )
+        } catch (e: RuntimeException) {
+            // Напр. при стартиране от Android Auto, докато приложението е във фонов режим.
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             stopSelf()
             return START_NOT_STICKY
@@ -78,6 +91,7 @@ class TrackingService : Service(), LocationListener {
 
     override fun onDestroy() {
         locationManager.removeUpdates(this)
+        notificationManager()?.cancel(SECTION_NOTIFICATION_ID)
         TrackingHub.setTracking(false)
         tts?.shutdown()
         tone?.release()
@@ -91,10 +105,13 @@ class TrackingService : Service(), LocationListener {
             timeMs = location.elapsedRealtimeNanos / 1_000_000,
             speedMps = if (location.hasSpeed()) location.speed.toDouble() else null,
             accuracyM = if (location.hasAccuracy()) location.accuracy.toDouble() else null,
+            bearingDeg = if (location.hasBearing()) location.bearing.toDouble() else null,
         )
-        TrackingHub.onFix(fix).forEach(::handleEvent)
+        val events = TrackingHub.onFix(fix)
+        events.forEach(::handleEvent)
         val state = TrackingHub.state.value
         val active = state.active
+        updateSectionNotification(state, alert = events.any { it is TrackerEvent.Entered })
 
         val over = active?.overLimit == true
         if (over && !wasOverLimit) {
@@ -108,7 +125,7 @@ class TrackingService : Service(), LocationListener {
             val limit = active.limitKmh?.let { " / огр. $it" } ?: ""
             "Средна: $avg км/ч$limit · ${active.title}"
         } else {
-            state.nearest?.let { "Най-близка: ${it.title} (${formatKm(it.distanceM)})" }
+            state.nearest?.let { "${if (it.ahead) "Следваща" else "Най-близка"}: ${it.title} (${formatKm(it.distanceM)})" }
                 ?: "Следене на отсечките за средна скорост…"
         }
         if (text != lastNotificationText) {
@@ -129,12 +146,72 @@ class TrackingService : Service(), LocationListener {
                 speak("Начало на отсечка за средна скорост. Ограничение ${event.active.limitKmh ?: ""} километра в час.")
             }
             is TrackerEvent.Finished -> {
+                showResultNotification(event.result)
                 tone?.startTone(ToneGenerator.TONE_PROP_ACK, 300)
                 speak("Край на отсечката. Средна скорост ${event.result.avgKmh.roundToInt()} километра в час.")
             }
             is TrackerEvent.Cancelled -> Unit
         }
     }
+
+    /**
+     * Малко изскачащо известие (и в Android Auto) с името на отсечката, оставащите км,
+     * средната скорост и ограничението. Изскача при влизане, после се обновява тихо.
+     */
+    private fun updateSectionNotification(state: UiState, alert: Boolean) {
+        val active = state.active
+        if (active == null) {
+            if (sectionNotificationShown) {
+                sectionNotificationShown = false
+                notificationManager()?.cancel(SECTION_NOTIFICATION_ID)
+            }
+            return
+        }
+        val now = SystemClock.elapsedRealtime()
+        if (!alert && sectionNotificationShown && now - lastSectionNotificationMs < SECTION_UPDATE_MS) return
+        lastSectionNotificationMs = now
+        sectionNotificationShown = true
+        val text = sectionSummary(active)
+        postSectionNotification(active.title, text, alert, timeoutMs = null)
+    }
+
+    private fun showResultNotification(result: SectionResult) {
+        val limit = result.limitKmh?.let { " (огр. $it)" } ?: ""
+        val verdict = if (result.overLimit) "НАД ограничението" else "в норма"
+        sectionNotificationShown = false
+        postSectionNotification(
+            "Край: ${result.title}",
+            "Средна ${result.avgKmh.roundToInt()} км/ч$limit – $verdict",
+            alert = true,
+            timeoutMs = 20_000L,
+        )
+    }
+
+    private fun postSectionNotification(title: String, text: String, alert: Boolean, timeoutMs: Long?) {
+        val open = PendingIntent.getActivity(
+            this, 2, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val carExtender = CarAppExtender.Builder()
+            .setContentTitle(title)
+            .setContentText(text)
+            .setSmallIcon(R.drawable.ic_speed)
+            .setImportance(if (alert) NotificationManagerCompat.IMPORTANCE_HIGH else NotificationManagerCompat.IMPORTANCE_LOW)
+            .build()
+        val builder = NotificationCompat.Builder(this, SECTION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_speed)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setCategory(NotificationCompat.CATEGORY_NAVIGATION)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOnlyAlertOnce(!alert)
+            .setSilent(!alert)
+            .setContentIntent(open)
+            .extend(carExtender)
+        if (timeoutMs != null) builder.setTimeoutAfter(timeoutMs).setAutoCancel(true)
+        notificationManager()?.notify(SECTION_NOTIFICATION_ID, builder.build())
+    }
+
+    private fun notificationManager(): NotificationManager? = getSystemService(NotificationManager::class.java)
 
     private fun speak(text: String) {
         if (ttsReady && getSharedPreferences("settings", MODE_PRIVATE).getBoolean("voice", true)) {
@@ -144,7 +221,10 @@ class TrackingService : Service(), LocationListener {
 
     private fun createChannel() {
         val channel = NotificationChannel(CHANNEL_ID, "Средна скорост", NotificationManager.IMPORTANCE_LOW)
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
+        val sections = NotificationChannel(SECTION_CHANNEL_ID, "Отсечки (изскачащи)", NotificationManager.IMPORTANCE_HIGH).apply {
+            setSound(null, null)
+        }
+        notificationManager()?.createNotificationChannels(listOf(channel, sections))
     }
 
     private fun buildNotification(text: String): Notification {
@@ -168,6 +248,9 @@ class TrackingService : Service(), LocationListener {
     companion object {
         private const val CHANNEL_ID = "tracking"
         private const val NOTIFICATION_ID = 1
+        private const val SECTION_CHANNEL_ID = "sections"
+        private const val SECTION_NOTIFICATION_ID = 2
+        private const val SECTION_UPDATE_MS = 3_000L
         const val ACTION_STOP = "bg.averagespeed.STOP"
 
         fun start(context: Context) {
@@ -182,3 +265,11 @@ class TrackingService : Service(), LocationListener {
 
 fun formatKm(meters: Double): String =
     if (meters < 1000) "${meters.roundToInt()} м" else String.format(Locale.US, "%.1f км", meters / 1000)
+
+/** Кратко описание за малкия прозорец: средна, ограничение, оставащи км. */
+fun sectionSummary(active: ActiveSection): String {
+    val avg = active.avgKmh?.roundToInt()?.toString() ?: "–"
+    val limit = active.limitKmh?.let { " · огр. $it" } ?: ""
+    val remaining = active.remainingM?.let { " · остават ${formatKm(it)}" } ?: ""
+    return "Средна $avg км/ч$limit$remaining"
+}

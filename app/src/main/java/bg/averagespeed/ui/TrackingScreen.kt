@@ -139,7 +139,14 @@ private fun ActiveCard(a: ActiveSection) {
                 }
                 Text(text, color = c, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
             }
-            if (a.lengthIsEstimate && !a.manual) {
+            if (a.joinedMidway) {
+                Text(
+                    "Влязохте по средата на отсечката – средната се мери от точката на влизане",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Amber,
+                    textAlign = TextAlign.Center,
+                )
+            } else if (a.lengthIsEstimate && !a.manual) {
                 Text(
                     "Координатите на камерите са приблизителни – показанията са ориентировъчни",
                     style = MaterialTheme.typography.bodySmall,
@@ -159,7 +166,10 @@ private fun IdleCard(state: UiState) {
             Text("км/ч", style = MaterialTheme.typography.titleMedium)
             state.nearest?.let {
                 Spacer(Modifier.height(12.dp))
-                Text("Най-близка отсечка:", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    if (it.ahead) "Следваща отсечка по посоката на движение:" else "Най-близка отсечка:",
+                    style = MaterialTheme.typography.bodySmall,
+                )
                 Text("${it.title} (${it.road})", textAlign = TextAlign.Center)
                 Text("${formatKm(it.distanceM)} · ограничение ${it.limitKmh} км/ч", style = MaterialTheme.typography.bodySmall)
             }
@@ -188,7 +198,10 @@ private fun ResultCard(r: SectionResult) {
                 color = if (r.limitKmh == null) Color.Unspecified else if (r.overLimit) Red else Green,
                 style = MaterialTheme.typography.titleLarge,
             )
-            Text("${formatKm(r.lengthM)} за ${formatDuration(r.durationMs)}", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "${formatKm(r.lengthM)} за ${formatDuration(r.durationMs)}" + if (r.partial) " (част от отсечката)" else "",
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }
